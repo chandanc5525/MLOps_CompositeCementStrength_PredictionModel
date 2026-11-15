@@ -3,22 +3,38 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "mlops-cli"
-version = "0.1.0"
-description = "Simple CLI template for a production-style MLOps workflow"
-requires-python = ">=3.9"
+name = "composite-cement-strength-prediction"
+version = "1.0.0"
+authors = [
+    { name = "Chandan Chaudhari", email = "chaudhari.chandan22@gmail.com" }
+]
+description = "Production-style MLOps workflow for Composite Cement Strength Prediction"
+readme = "README.md"
+requires-python = ">=3.12"
+
 dependencies = [
     "scikit-learn>=1.3",
     "pandas>=2.0",
+    "numpy>=2.0",
     "joblib>=1.3",
     "pyyaml>=6.0",
+    "fastapi>=0.110",
+    "uvicorn[standard]>=0.27",
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=7.0"]
+dev = [
+    "pytest>=8.0",
+    "httpx>=0.27",
+]
+notebooks = [
+    "matplotlib>=3.8",
+    "seaborn>=0.13",
+]
 
-[project.scripts]
-mlops = "mlops_cli.cli:main"
+[tool.setuptools]
+packages = ["src"]
 
-[tool.setuptools.packages.find]
-where = ["src"]
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]

@@ -1,39 +1,54 @@
-# Run from the project root:
-#   docker compose -f docker/docker-compose.yml run --rm mlops train
-name: mlops
+# Run commands from the project root, for example:
+#   docker compose -f docker/docker-compose.yml run --rm train
+#   docker compose -f docker/docker-compose.yml up serve
+name: composite-cement-strength
 
-x-mlops: &mlops
+x-app: &app
   build:
     context: ..
     dockerfile: docker/Dockerfile
-  image: mlops-cli:latest
+  image: composite-cement-strength:latest
   volumes:
     - ../config.yaml:/app/config.yaml:ro
     - ../data:/app/data
-    - ../models:/app/models
-    - ../reports:/app/reports
+    - ../artifacts:/app/artifacts
     - ../logs:/app/logs
 
 services:
-  mlops:            # generic: pass any CLI command
-    <<: *mlops
+  app:                # generic: pass any CLI command
+    <<: *app
 
   ingest:
-    <<: *mlops
-    command: ["ingest", "--demo"]
+    <<: *app
+    command: ["ingest"]
 
   preprocess:
-    <<: *mlops
+    <<: *app
     command: ["preprocess"]
 
   train:
-    <<: *mlops
+    <<: *app
     command: ["train"]
 
   evaluate:
-    <<: *mlops
+    <<: *app
     command: ["evaluate"]
 
   run-all:
-    <<: *mlops
-    command: ["run-all", "--demo"]
+    <<: *app
+    command: ["run-all"]
+
+  predict:
+    <<: *app
+    command:
+      - "predict"
+      - "--input"
+      - "data/raw/Concrete_Data.csv"
+      - "--output"
+      - "artifacts/reports/predictions.csv"
+
+  serve:
+    <<: *app
+    command: ["serve", "--host", "0.0.0.0", "--port", "8000"]
+    ports:
+      - "8000:8000"

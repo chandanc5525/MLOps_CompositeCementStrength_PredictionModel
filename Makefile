@@ -1,22 +1,44 @@
-.PHONY: install data train evaluate models test docker
+.PHONY: install ingest preprocess train evaluate predict run-all serve test clean \
+        docker-build docker-run-all docker-serve
+
+PYTHON ?= python
 
 install:
-	pip install -e ".[dev]"
+	$(PYTHON) -m pip install -e ".[dev]"
 
-data:
-	mlops init-data
+ingest:
+	$(PYTHON) main.py ingest
+
+preprocess:
+	$(PYTHON) main.py preprocess
 
 train:
-	mlops train
+	$(PYTHON) main.py train
 
 evaluate:
-	mlops evaluate
+	$(PYTHON) main.py evaluate
 
-models:
-	mlops models
+predict:
+	$(PYTHON) main.py predict --input data/raw/Concrete_Data.csv \
+		--output artifacts/reports/predictions.csv
+
+run-all:
+	$(PYTHON) main.py run-all
+
+serve:
+	$(PYTHON) main.py serve
 
 test:
-	pytest -q
+	$(PYTHON) -m pytest -q
 
-docker:
-	docker build -t mlops-cli .
+clean:
+	$(PYTHON) -c "import shutil; [shutil.rmtree(p, ignore_errors=True) for p in ('artifacts', '.pytest_cache')]"
+
+docker-build:
+	docker build -f docker/Dockerfile -t composite-cement-strength .
+
+docker-run-all:
+	docker compose -f docker/docker-compose.yml run --rm run-all
+
+docker-serve:
+	docker compose -f docker/docker-compose.yml up serve
